@@ -8,6 +8,7 @@ LangGraph Agent Demo - 独立演示程序
 
 import sys
 import os
+from dotenv import load_dotenv
 from typing import TypedDict, List, Dict, Any, Literal
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage, BaseMessage
@@ -28,19 +29,22 @@ except AttributeError:
 # 1. 定义 Agent 状态
 # ============================================================
 
+
 class AgentState(TypedDict):
     """Agent 状态定义"""
-    messages: List[BaseMessage]    # 对话消息列表
-    task_type: str                 # 任务类型: math_calc, math_proof, logic, general
-    plan: str                      # planner 制定的计划
-    current_step: str              # 当前执行步骤
-    results: Dict[str, Any]        # 各节点的执行结果
-    final_answer: str              # 最终答案
+
+    messages: List[BaseMessage]  # 对话消息列表
+    task_type: str  # 任务类型: math_calc, math_proof, logic, general
+    plan: str  # planner 制定的计划
+    current_step: str  # 当前执行步骤
+    results: Dict[str, Any]  # 各节点的执行结果
+    final_answer: str  # 最终答案
 
 
 # ============================================================
 # 2. 定义工具函数
 # ============================================================
+
 
 @tool
 def calculator(expression: str) -> str:
@@ -54,7 +58,7 @@ def calculator(expression: str) -> str:
     """
     try:
         # 安全检查：只允许数字和基本运算符
-        allowed_chars = set('0123456789+-*/() .')
+        allowed_chars = set("0123456789+-*/() .")
         if not all(c in allowed_chars for c in expression):
             return f"错误: 表达式包含非法字符"
 
@@ -70,6 +74,7 @@ def calculator(expression: str) -> str:
 
 # 全局变量，用于在节点中访问 LLM
 llm = None
+
 
 def planner_node(state: AgentState) -> AgentState:
     """规划器节点：分析用户输入，制定执行计划"""
@@ -98,10 +103,12 @@ def planner_node(state: AgentState) -> AgentState:
 执行计划: [计划内容]"""
 
     try:
-        response = llm.invoke([
-            SystemMessage(content=system_prompt),
-            HumanMessage(content=f"用户问题: {user_input}")
-        ])
+        response = llm.invoke(
+            [
+                SystemMessage(content=system_prompt),
+                HumanMessage(content=f"用户问题: {user_input}"),
+            ]
+        )
 
         plan_text = response.content
 
@@ -147,18 +154,17 @@ def math_calculator_node(state: AgentState) -> AgentState:
     try:
         # 绑定工具的 LLM
         llm_with_tools = llm.bind_tools([calculator])
-        response = llm_with_tools.invoke([
-            SystemMessage(content=system_prompt),
-            HumanMessage(content=user_input)
-        ])
+        response = llm_with_tools.invoke(
+            [SystemMessage(content=system_prompt), HumanMessage(content=user_input)]
+        )
 
         # 检查是否有工具调用
         result_text = response.content
-        if hasattr(response, 'tool_calls') and response.tool_calls:
+        if hasattr(response, "tool_calls") and response.tool_calls:
             # 执行工具调用
             for tool_call in response.tool_calls:
-                if tool_call['name'] == 'calculator':
-                    expr = tool_call['args']['expression']
+                if tool_call["name"] == "calculator":
+                    expr = tool_call["args"]["expression"]
                     calc_result = calculator.invoke({"expression": expr})
                     result_text = f"{result_text}\n\n工具调用: {calc_result}"
 
@@ -195,10 +201,9 @@ def math_prover_node(state: AgentState) -> AgentState:
 要求逻辑严密，步骤清晰。"""
 
     try:
-        response = llm.invoke([
-            SystemMessage(content=system_prompt),
-            HumanMessage(content=user_input)
-        ])
+        response = llm.invoke(
+            [SystemMessage(content=system_prompt), HumanMessage(content=user_input)]
+        )
 
         proof_text = response.content
         state["results"]["proof"] = proof_text
@@ -234,10 +239,9 @@ def logic_reasoner_node(state: AgentState) -> AgentState:
 要求推理严密，逻辑清晰。"""
 
     try:
-        response = llm.invoke([
-            SystemMessage(content=system_prompt),
-            HumanMessage(content=user_input)
-        ])
+        response = llm.invoke(
+            [SystemMessage(content=system_prompt), HumanMessage(content=user_input)]
+        )
 
         reasoning_text = response.content
         state["results"]["reasoning"] = reasoning_text
@@ -269,10 +273,9 @@ def summarizer_node(state: AgentState) -> AgentState:
     if task_type == "general" or not results:
         system_prompt = """你是一个友好的助手。直接回答用户的问题。"""
         try:
-            response = llm.invoke([
-                SystemMessage(content=system_prompt),
-                HumanMessage(content=user_input)
-            ])
+            response = llm.invoke(
+                [SystemMessage(content=system_prompt), HumanMessage(content=user_input)]
+            )
             final_answer = response.content
         except Exception as e:
             final_answer = f"抱歉，处理问题时出错: {str(e)}"
@@ -286,16 +289,19 @@ def summarizer_node(state: AgentState) -> AgentState:
 3. 语言简洁清晰
 4. 如果有计算结果，要明确给出"""
 
-        results_summary = "\n\n".join([
-            f"**{key}节点结果:**\n{value}"
-            for key, value in results.items()
-        ])
+        results_summary = "\n\n".join(
+            [f"**{key}节点结果:**\n{value}" for key, value in results.items()]
+        )
 
         try:
-            response = llm.invoke([
-                SystemMessage(content=system_prompt),
-                HumanMessage(content=f"原始问题: {user_input}\n\n执行计划: {plan}\n\n各节点结果:\n{results_summary}\n\n请给出最终答案:")
-            ])
+            response = llm.invoke(
+                [
+                    SystemMessage(content=system_prompt),
+                    HumanMessage(
+                        content=f"原始问题: {user_input}\n\n执行计划: {plan}\n\n各节点结果:\n{results_summary}\n\n请给出最终答案:"
+                    ),
+                ]
+            )
             final_answer = response.content
         except Exception as e:
             final_answer = f"总结失败，但以下是各节点的结果：\n{results_summary}"
@@ -313,7 +319,10 @@ def summarizer_node(state: AgentState) -> AgentState:
 # 4. 定义路由函数
 # ============================================================
 
-def route_after_planner(state: AgentState) -> Literal["math_calculator", "math_prover", "logic_reasoner", "summarizer"]:
+
+def route_after_planner(
+    state: AgentState,
+) -> Literal["math_calculator", "math_prover", "logic_reasoner", "summarizer"]:
     """根据任务类型路由到不同的工作节点"""
     task_type = state.get("task_type", "general")
 
@@ -323,7 +332,7 @@ def route_after_planner(state: AgentState) -> Literal["math_calculator", "math_p
         "math_calc": "math_calculator",
         "math_proof": "math_prover",
         "logic": "logic_reasoner",
-        "general": "summarizer"
+        "general": "summarizer",
     }
 
     next_node = routing_map.get(task_type, "summarizer")
@@ -335,6 +344,7 @@ def route_after_planner(state: AgentState) -> Literal["math_calculator", "math_p
 # ============================================================
 # 5. 创建 Agent
 # ============================================================
+
 
 def create_agent(config):
     """创建 LangGraph Agent
@@ -357,7 +367,7 @@ def create_agent(config):
         model=config.get("model", "deepseek-chat"),
         api_key=config["api_key"],
         base_url=config["base_url"],
-        temperature=0.1
+        temperature=0.1,
     )
 
     # 2. 创建 StateGraph
@@ -382,8 +392,8 @@ def create_agent(config):
             "math_calculator": "math_calculator",
             "math_prover": "math_prover",
             "logic_reasoner": "logic_reasoner",
-            "summarizer": "summarizer"
-        }
+            "summarizer": "summarizer",
+        },
     )
 
     # 所有工作节点 → summarizer
@@ -406,6 +416,7 @@ def create_agent(config):
 # 6. 交互模式
 # ============================================================
 
+
 def interactive_mode():
     """交互模式"""
     print("\n" + "=" * 70)
@@ -414,8 +425,9 @@ def interactive_mode():
 
     # 模型配置（可手动修改）
     # DeepSeek 在线模型
+    load_dotenv()
     base_url = "https://api.deepseek.com"
-    api_key = os.getenv("DEEPSEEK_API_KEY", "sk-2ee0851f6c5545f099190c4fb27bf3db")
+    api_key = os.getenv("DEEPSEEK_API_KEY")
 
     # 如果使用本地部署的 Qwen-7B，修改为：
     # base_url = "http://localhost:8000/v1"
@@ -424,7 +436,7 @@ def interactive_mode():
     config = {
         "base_url": base_url,
         "api_key": api_key,
-        "model": "deepseek-chat"  # 或 "qwen-7b"
+        "model": "deepseek-chat",  # 或 "qwen-7b"
     }
 
     agent = create_agent(config)
@@ -451,7 +463,7 @@ def interactive_mode():
                 "plan": "",
                 "current_step": "",
                 "results": {},
-                "final_answer": ""
+                "final_answer": "",
             }
 
             # 执行 agent
