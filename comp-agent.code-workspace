@@ -1,0 +1,138 @@
+{
+    "folders": [
+        {
+            "name": "🏠 Root",
+            "path": "."
+        },
+        {
+            "name": "🧠 LangGraph Agent",
+            "path": "./langgraph-agent"
+        },
+        {
+            "name": "🤖 Agno Agent",
+            "path": "./agno-agent"
+        },
+        {
+            "name": "🧪 Tests",
+            "path": "./tests"
+        },
+        {
+            "name": "📚 Docs",
+            "path": "./docs"
+        }
+    ],
+    "settings": {
+        "python.defaultInterpreterPath": "/home/zzy/anaconda3/envs/langgraph-agent/bin/python",
+        "python.terminal.activateEnvironment": true,
+        "files.encoding": "utf8",
+        "python.analysis.extraPaths": [
+            "${workspaceFolder}/langgraph-agent/src",
+            "${workspaceFolder}/agno-agent/src"
+        ],
+        "python.analysis.autoSearchPaths": true,
+        "files.associations": {
+            "**/langgraph-agent/**/*.py": "python",
+            "**/agno-agent/**/*.py": "python"
+        },
+        "terminal.integrated.env.linux": {
+            "PYTHONIOENCODING": "utf-8"
+        },
+        "[python]": {
+            "editor.formatOnSave": true,
+            "editor.codeActionsOnSave": {
+                "source.organizeImports": "explicit"
+            }
+        }
+    },
+    "launch": {
+        "version": "0.2.0",
+        "configurations": [
+            {
+                "name": "🧠 Debug LangGraph Agent",
+                "type": "python",
+                "request": "launch",
+                "program": "${workspaceFolder}/langgraph-agent/main.py",
+                "python": "/home/zzy/anaconda3/envs/langgraph-agent/bin/python",
+                "console": "integratedTerminal",
+                "cwd": "${workspaceFolder}/langgraph-agent",
+                "env": {
+                    "PYTHONPATH": "${workspaceFolder}/langgraph-agent/src:${workspaceFolder}",
+                    "PYTHONIOENCODING": "utf-8"
+                },
+                "args": [],
+                "justMyCode": true,
+                "stopOnEntry": false
+            },
+            {
+                "name": "🤖 Debug Agno Agent",
+                "type": "python",
+                "request": "launch",
+                "program": "${workspaceFolder}/agno-agent/main.py",
+                "python": "/home/zzy/anaconda3/envs/agno-agent/bin/python",
+                "console": "integratedTerminal",
+                "cwd": "${workspaceFolder}/agno-agent",
+                "env": {
+                    "PYTHONPATH": "${workspaceFolder}/agno-agent/src:${workspaceFolder}",
+                    "PYTHONIOENCODING": "utf-8"
+                },
+                "args": [],
+                "justMyCode": true,
+                "stopOnEntry": false
+            }
+        ]
+    },
+    "tasks": {
+        "version": "2.0.0",
+        "tasks": [
+            {
+                "label": "🧠 Run LangGraph Agent",
+                "type": "shell",
+                "command": "/home/zzy/anaconda3/envs/langgraph-agent/bin/python",
+                "args": ["main.py"],
+                "options": {
+                    "cwd": "${workspaceFolder}/langgraph-agent",
+                    "env": {
+                        "PYTHONPATH": "${workspaceFolder}/langgraph-agent/src:${workspaceFolder}",
+                        "PYTHONIOENCODING": "utf-8"
+                    }
+                },
+                "group": "build",
+                "presentation": {
+                    "echo": true,
+                    "reveal": "always",
+                    "focus": true,
+                    "panel": "new"
+                }
+            },
+            {
+                "label": "🤖 Run Agno Agent",
+                "type": "shell",
+                "command": "/home/zzy/anaconda3/envs/agno-agent/bin/python",
+                "args": ["main.py"],
+                "options": {
+                    "cwd": "${workspaceFolder}/agno-agent",
+                    "env": {
+                        "PYTHONPATH": "${workspaceFolder}/agno-agent/src:${workspaceFolder}",
+                        "PYTHONIOENCODING": "utf-8"
+                    }
+                },
+                "group": "build",
+                "presentation": {
+                    "echo": true,
+                    "reveal": "always",
+                    "focus": true,
+                    "panel": "new"
+                }
+            }
+        ]
+    },
+    "extensions": {
+        "recommendations": [
+            "ms-python.python",
+            "ms-python.vscode-pylance",
+            "ms-python.flake8",
+            "ms-python.black-formatter",
+            "ms-vscode.vscode-json"
+        ]
+    }
+}
